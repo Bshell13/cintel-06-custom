@@ -13,6 +13,11 @@ list of external libraries
 -  shiny
 -  shiny live
 -  MLB-StatsAPI
+-  shinyswatch
+-  shinywidgets
+-  faicons
+-  scipy
+-  collections
 ```shell
 py -m pip install "list of external libraries"
 py -m pip freeze > requirements.txt
