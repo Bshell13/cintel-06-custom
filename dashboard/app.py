@@ -87,7 +87,7 @@ with ui.layout_columns():
         showcase=icon_svg("baseball-bat-ball"),
         theme = ("info")
     ):
-        "Hitting"
+        ui.h2("Hitting")
         @render.text
         def display_avg():
             seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
@@ -118,7 +118,7 @@ with ui.layout_columns():
         showcase=icon_svg("baseball"),
         theme = ("info")
     ):
-        "Pitching"
+        ui.h2("Pitching")
         @render.text
         def display_era():
             seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
@@ -150,7 +150,7 @@ with ui.layout_columns():
         theme = ("info")
     ):
         
-        "Base Running"
+        ui.h2("Base Running")
         @render.text
         def display_total_runs():
             seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
@@ -176,15 +176,63 @@ with ui.layout_columns():
             seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
             return f"Runners Left on Base: {seasonal_hitting_stats['leftonbase'][2024]}"
 
-with ui.navset_pill(id='tab'):
+with ui.navset_card_tab(id='tab'):
     with ui.nav_panel("Win-Loss"):
-        ui.h2('graphs')
         @render_plotly
         def win_loss_line_graph():
             seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
             
             plotly_win_loss = px.line(
                 seasonal_pitching_stats,
-                y='wins',
+                y=seasonal_pitching_stats['wins'] / (seasonal_pitching_stats['wins'] + seasonal_pitching_stats['losses']),
+            )
+            plotly_win_loss.update_layout(
+                xaxis_title="Season",
+                yaxis_title='Win-Loss %'
             )
             return plotly_win_loss
+        
+    with ui.nav_panel('Batting AVG'):
+        @render_plotly
+        def batting_avg():
+            seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
+            
+            plotly_batting_avg = px.line(
+                seasonal_hitting_stats,
+                y=seasonal_hitting_stats['avg'],
+            )
+            plotly_batting_avg.update_layout(
+                xaxis_title="Season",
+                yaxis_title='Batting AVG %'
+            )
+            return plotly_batting_avg
+        
+    with ui.nav_panel('ERA'):
+        @render_plotly
+        def era():
+            seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
+            
+            plotly_era = px.line(
+                seasonal_pitching_stats,
+                y=seasonal_pitching_stats['era'],
+            )
+            plotly_era.update_layout(
+                xaxis_title="Season",
+                yaxis_title='ERA'
+            )
+            return plotly_era
+        
+    with ui.nav_panel('Total Runs'):
+        @render_plotly
+        def total_runs():
+            seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
+            
+            plotly_total_runs = px.line(
+                seasonal_hitting_stats,
+                y=seasonal_hitting_stats['runs'],
+            )
+            plotly_total_runs.update_layout(
+                xaxis_title="Season",
+                yaxis_title='Total Runs'
+            )
+            return plotly_total_runs
