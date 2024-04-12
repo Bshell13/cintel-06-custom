@@ -13,8 +13,6 @@ from scipy import stats
 from faicons import icon_svg
 import mlbstatsapi
 
-# Define variables
-    # time interval
 
 ui.page_opts(title="Kansas City Royals Season", fillable=True)
 
@@ -23,14 +21,13 @@ with ui.sidebar(open='open'):
     ui.h2("Select a range of seasons")
     
     ui.input_slider(
-        'seasons', 
+        'year', 
         'Seasons',
         min=00,
         max=24,
-        value=[20, 24]
+        value=[20, 24],
     )
     
-    # check boxes for different types of hits
     
     ui.hr()
     ui.a(
@@ -47,49 +44,42 @@ with ui.sidebar(open='open'):
 
 
 @reactive.calc
-def hitting_stats():
+def get_stats():
+    year = list(input.year())
+    year_range = []
+    for i in year:
+        year_range.append(int('20' + str(i)))
+    
     mlb = mlbstatsapi.Mlb()
 
     team_id = mlb.get_team_id('Kansas City Royals')[0]
     stats = ['season']
-    groups = ['hitting']
+    groups = ['pitching', 'hitting']
+    seasonal_hitting_stats = {}
+    seasonal_pitching_stats = {}
+    for year in range(year_range[0], year_range[1] + 1):
+        params = {'season': year}
 
-    stats_dict= mlb.get_team_stats(team_id, stats=stats, groups=groups)
-    hitting_stats = stats_dict['hitting']['season']
+        seasonal_hitting_stats[year] = {}
+        seasonal_pitching_stats[year] = {}
 
-    hitting_stats_dict = {}
+        stats_dict= mlb.get_team_stats(team_id, stats=stats, groups=groups, **params)
+        hitting_stats = stats_dict['hitting']['season']
+        pitching_stats = stats_dict['pitching']['season']
+        
+        for split in hitting_stats.splits:
+            for k, v in split.stat.__dict__.items():
+                seasonal_hitting_stats[year][k] = v
+        
+        for split in pitching_stats.splits:
+            for k, v in split.stat.__dict__.items():
+                seasonal_pitching_stats[year][k] = v
 
-    for split in hitting_stats.splits:
-        for k, v in split.stat.__dict__.items():
-            hitting_stats_dict[k] = v
-
-    return hitting_stats_dict
-
-@reactive.calc
-def pitching_stats():
-    mlb = mlbstatsapi.Mlb()
-
-    team_id = mlb.get_team_id('Kansas City Royals')[0]
-    stats = ['season']
-    groups = ['pitching']
-
-    stats_dict= mlb.get_team_stats(team_id, stats=stats, groups=groups)
-    pitching_stats = stats_dict['pitching']['season']
-
-    pitching_stats_dict = {}
-
-    for split in pitching_stats.splits:
-        for k, v in split.stat.__dict__.items():
-            pitching_stats_dict[k] = v
-
-    return pitching_stats_dict
-
-# @reactive.calc
-# def getting_seasons():
-#     mlb = mlbstatsapi.Mlb()
+    seasonal_hitting_stats_df = pd.DataFrame(seasonal_hitting_stats).T
+    seasonal_pitching_stats_df = pd.DataFrame(seasonal_pitching_stats).T
     
-#     seasons = mlb.get_seasons(sport_id=1)
-    
+    return seasonal_hitting_stats_df, seasonal_pitching_stats_df
+
 
 # Value boxes of stats for hitting, pitching, and base running seperatly
 with ui.layout_columns():
@@ -100,28 +90,28 @@ with ui.layout_columns():
         "Hitting"
         @render.text
         def display_avg():
-            hitting_stats_dict = hitting_stats()
-            return f"Batting AVG: {hitting_stats_dict['avg']}"
+            seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
+            return f"Batting AVG: {seasonal_hitting_stats['avg'][2024]}"
         
         @render.text
         def display_hits():
-            hitting_stats_dict = hitting_stats()
-            return f"Total Hits: {hitting_stats_dict['hits']}"
+            seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
+            return f"Total Hits: {seasonal_hitting_stats['hits'][2024]}"
         
         @render.text
         def display_doubles():
-            hitting_stats_dict = hitting_stats()
-            return f"Doubles: {hitting_stats_dict['doubles']}"
+            seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
+            return f"Doubles: {seasonal_hitting_stats['doubles'][2024]}"
         
         @render.text
         def display_triples():
-            hitting_stats_dict = hitting_stats()
-            return f"Triples: {hitting_stats_dict['triples']}"
+            seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
+            return f"Triples: {seasonal_hitting_stats['triples'][2024]}"
         
         @render.text
         def display_homeruns():
-            hitting_stats_dict = hitting_stats()
-            return f"Home Runs: {hitting_stats_dict['homeruns']}"
+            seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
+            return f"Home Runs: {seasonal_hitting_stats['homeruns'][2024]}"
 
         
     with ui.value_box(
@@ -131,28 +121,28 @@ with ui.layout_columns():
         "Pitching"
         @render.text
         def display_era():
-            pitching_stats_dict = pitching_stats()
-            return f"ERA: {pitching_stats_dict['era']}"
+            seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
+            return f"ERA: {seasonal_pitching_stats['era'][2024]}"
         
         @render.text
         def display_number_of_pitches():
-            pitching_stats_dict = pitching_stats()
-            return f"Total Pitches: {pitching_stats_dict['numberofpitches']}"
+            seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
+            return f"Total Pitches: {seasonal_pitching_stats['numberofpitches'][2024]}"
         
         @render.text
         def display_batters_faced():
-            pitching_stats_dict = pitching_stats()
-            return f"Total Batters Faced: {pitching_stats_dict['battersfaced']}"
+            seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
+            return f"Total Batters Faced: {seasonal_pitching_stats['battersfaced'][2024]}"
         
         @render.text
         def display_strikeouts():
-            pitching_stats_dict = pitching_stats()
-            return f"Total Strikeouts: {pitching_stats_dict['strikeouts']}"
+            seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
+            return f"Total Strikeouts: {seasonal_pitching_stats['strikeouts'][2024]}"
         
         @render.text
         def display_shutouts():
-            pitching_stats_dict = pitching_stats()
-            return f"Total Shutouts: {pitching_stats_dict['shutouts']}"
+            seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
+            return f"Total Shutouts: {seasonal_pitching_stats['shutouts'][2024]}"
         
 
     with ui.value_box(
@@ -163,33 +153,38 @@ with ui.layout_columns():
         "Base Running"
         @render.text
         def display_total_runs():
-            hitting_stats_dict = hitting_stats()
-            return f"Total Runs: {hitting_stats_dict['runs']}"
+            seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
+            return f"Total Runs: {seasonal_hitting_stats['runs'][2024]}"
         
         @render.text
         def display_rbi():
-            hitting_stats_dict = hitting_stats()
-            return f"RBI: {hitting_stats_dict['rbi']}"
+            seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
+            return f"RBI: {seasonal_hitting_stats['rbi'][2024]}"
         
         @render.text
         def display_stolen_base_percentage():
-            hitting_stats_dict = hitting_stats()
-            return f"Stolen Base Percentage: {hitting_stats_dict['stolenbasepercentage']}"
+            seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
+            return f"Stolen Base Percentage: {seasonal_hitting_stats['stolenbasepercentage'][2024]}"
         
         @render.text
         def display_obp():
-            hitting_stats_dict = hitting_stats()
-            return f"On-Base Percentage: {hitting_stats_dict['obp']}"
+            seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
+            return f"On-Base Percentage: {seasonal_hitting_stats['obp'][2024]}"
         
         @render.text
         def display_left_on_base():
-            hitting_stats_dict = hitting_stats()
-            return f"Runners Left on Base: {hitting_stats_dict['leftonbase']}"
+            seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
+            return f"Runners Left on Base: {seasonal_hitting_stats['leftonbase'][2024]}"
 
 with ui.navset_pill(id='tab'):
     with ui.nav_panel("Win-Loss"):
+        ui.h2('graphs')
         @render_plotly
         def win_loss_line_graph():
+            seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
+            
             plotly_win_loss = px.line(
-                ui.h2("graphs")
+                seasonal_pitching_stats,
+                y='wins',
             )
+            return plotly_win_loss
