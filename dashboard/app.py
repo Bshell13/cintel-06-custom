@@ -16,7 +16,7 @@ import mlbstatsapi
 # Define variables
     # time interval
 
-ui.page_opts(title="Kansas City Royals Season Comparison", fillable=True)
+ui.page_opts(title="Kansas City Royals Season", fillable=True)
 
 with ui.sidebar(open='open'):
     
@@ -25,16 +25,16 @@ with ui.sidebar(open='open'):
     ui.input_slider(
         'seasons', 
         'Seasons',
-        min=2000,
-        max=2024,
-        value=[2020, 2024]
+        min=00,
+        max=24,
+        value=[20, 24]
     )
     
     # check boxes for different types of hits
     
     ui.hr()
     ui.a(
-        'MLB Stats API',
+        'Python MLB Stats API',
         href='https://github.com/zero-sum-seattle/python-mlb-statsapi',
         target='_blank'
     )
@@ -65,14 +65,43 @@ def hitting_stats():
 
     return hitting_stats_dict
 
+@reactive.calc
+def pitching_stats():
+    mlb = mlbstatsapi.Mlb()
 
+    team_id = mlb.get_team_id('Kansas City Royals')[0]
+    stats = ['season']
+    groups = ['pitching']
 
+    stats_dict= mlb.get_team_stats(team_id, stats=stats, groups=groups)
+    pitching_stats = stats_dict['pitching']['season']
+
+    pitching_stats_dict = {}
+
+    for split in pitching_stats.splits:
+        for k, v in split.stat.__dict__.items():
+            pitching_stats_dict[k] = v
+
+    return pitching_stats_dict
+
+# @reactive.calc
+# def getting_seasons():
+#     mlb = mlbstatsapi.Mlb()
+    
+#     seasons = mlb.get_seasons(sport_id=1)
+    
+
+# Value boxes of stats for hitting, pitching, and base running seperatly
 with ui.layout_columns():
     with ui.value_box(
         showcase=icon_svg("baseball-bat-ball"),
         theme = ("info")
     ):
-        "Current Season"
+        "Hitting"
+        @render.text
+        def display_avg():
+            hitting_stats_dict = hitting_stats()
+            return f"Batting AVG: {hitting_stats_dict['avg']}"
         
         @render.text
         def display_hits():
@@ -89,5 +118,78 @@ with ui.layout_columns():
             hitting_stats_dict = hitting_stats()
             return f"Triples: {hitting_stats_dict['triples']}"
         
+        @render.text
+        def display_homeruns():
+            hitting_stats_dict = hitting_stats()
+            return f"Home Runs: {hitting_stats_dict['homeruns']}"
+
+        
+    with ui.value_box(
+        showcase=icon_svg("baseball"),
+        theme = ("info")
+    ):
+        "Pitching"
+        @render.text
+        def display_era():
+            pitching_stats_dict = pitching_stats()
+            return f"ERA: {pitching_stats_dict['era']}"
+        
+        @render.text
+        def display_number_of_pitches():
+            pitching_stats_dict = pitching_stats()
+            return f"Total Pitches: {pitching_stats_dict['numberofpitches']}"
+        
+        @render.text
+        def display_batters_faced():
+            pitching_stats_dict = pitching_stats()
+            return f"Total Batters Faced: {pitching_stats_dict['battersfaced']}"
+        
+        @render.text
+        def display_strikeouts():
+            pitching_stats_dict = pitching_stats()
+            return f"Total Strikeouts: {pitching_stats_dict['strikeouts']}"
+        
+        @render.text
+        def display_shutouts():
+            pitching_stats_dict = pitching_stats()
+            return f"Total Shutouts: {pitching_stats_dict['shutouts']}"
         
 
+    with ui.value_box(
+        showcase=icon_svg("person-running"),
+        theme = ("info")
+    ):
+        
+        "Base Running"
+        @render.text
+        def display_total_runs():
+            hitting_stats_dict = hitting_stats()
+            return f"Total Runs: {hitting_stats_dict['runs']}"
+        
+        @render.text
+        def display_rbi():
+            hitting_stats_dict = hitting_stats()
+            return f"RBI: {hitting_stats_dict['rbi']}"
+        
+        @render.text
+        def display_stolen_base_percentage():
+            hitting_stats_dict = hitting_stats()
+            return f"Stolen Base Percentage: {hitting_stats_dict['stolenbasepercentage']}"
+        
+        @render.text
+        def display_obp():
+            hitting_stats_dict = hitting_stats()
+            return f"On-Base Percentage: {hitting_stats_dict['obp']}"
+        
+        @render.text
+        def display_left_on_base():
+            hitting_stats_dict = hitting_stats()
+            return f"Runners Left on Base: {hitting_stats_dict['leftonbase']}"
+
+with ui.navset_pill(id='tab'):
+    with ui.nav_panel("Win-Loss"):
+        @render_plotly
+        def win_loss_line_graph():
+            plotly_win_loss = px.line(
+                ui.h2("graphs")
+            )
