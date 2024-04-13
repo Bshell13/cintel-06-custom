@@ -13,12 +13,10 @@ list of external libraries
 -  pandas
 -  shiny
 -  shiny live
--  MLB-StatsAPI
+-  python-mlb-statsapi
 -  shinyswatch
 -  shinywidgets
 -  faicons
--  scipy
--  collections
 ```shell
 py -m pip install "list of external libraries"
 py -m pip freeze > requirements.txt

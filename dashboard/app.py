@@ -6,10 +6,8 @@ from shiny import reactive, render
 from shiny.express import input, ui
 from shinyswatch import theme
 from shinywidgets import render_plotly
-from collections import deque
 import plotly.express as px
 import pandas as pd
-from scipy import stats
 from faicons import icon_svg
 import mlbstatsapi
 
