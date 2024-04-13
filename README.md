@@ -1,4 +1,5 @@
 # MLB Stats for Module 06
+Updated stats for KC Royals.
 
 ## Virtual Environment
 Create a virtual environment and activate after successful creation.
