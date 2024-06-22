@@ -23,7 +23,7 @@ with ui.sidebar(open='open'):
         'Seasons',
         min=00,
         max=24,
-        value=[20, 24],
+        value=[18, 24],
     )
     
     
@@ -43,6 +43,10 @@ with ui.sidebar(open='open'):
 
 @reactive.calc
 def get_stats():
+    """This retrieves statistics from 'mlbstatsapi.MLB' 
+    and stores it in dataframes for seasonal hitting and pitching."""
+    
+    # makes a list of the seasons
     year = list(input.year())
     year_range = []
     for i in year:
@@ -61,10 +65,12 @@ def get_stats():
         seasonal_hitting_stats[year] = {}
         seasonal_pitching_stats[year] = {}
 
+        # Grabs stats for the team for a certain season (stats), type (groups), and parameters (params)
         stats_dict= mlb.get_team_stats(team_id, stats=stats, groups=groups, **params)
         hitting_stats = stats_dict['hitting']['season']
         pitching_stats = stats_dict['pitching']['season']
         
+        # Splits stats from a dictiononary into a dataframe
         for split in hitting_stats.splits:
             for k, v in split.stat.__dict__.items():
                 seasonal_hitting_stats[year][k] = v
