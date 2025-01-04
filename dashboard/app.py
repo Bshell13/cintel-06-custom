@@ -16,16 +16,19 @@ ui.page_opts(title="Kansas City Royals Season", fillable=True)
 
 with ui.sidebar(open='open'):
     
-    ui.h2("Select a range of seasons")
+    ui.input_select(
+        'single_year',
+        'Single Season',
+        {24: '2024', 23: '2023', 22: '2022', 21: '2021', 20:'2020'},
+    )
     
     ui.input_slider(
         'year', 
-        'Seasons',
+        'Range of Seasons',
         min=00,
         max=24,
         value=[18, 24],
     )
-    
     
     ui.hr()
     ui.a(
@@ -86,12 +89,13 @@ def get_stats():
 
 
 # Value boxes of stats for hitting, pitching, and base running seperatly
+ui.h5('Single Season Stats')
 with ui.layout_columns():
     with ui.value_box(
         showcase=icon_svg("baseball-bat-ball"),
         theme = ("info")
     ):
-        ui.h2("Hitting")
+        ui.h1("Hitting")
         @render.text
         def display_avg():
             seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
@@ -122,7 +126,7 @@ with ui.layout_columns():
         showcase=icon_svg("baseball"),
         theme = ("info")
     ):
-        ui.h2("Pitching")
+        ui.h1("Pitching")
         @render.text
         def display_era():
             seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
@@ -154,7 +158,7 @@ with ui.layout_columns():
         theme = ("info")
     ):
         
-        ui.h2("Base Running")
+        ui.h1("Base Running")
         @render.text
         def display_total_runs():
             seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
@@ -180,6 +184,7 @@ with ui.layout_columns():
             seasonal_hitting_stats, seasonal_pitching_stats = get_stats()
             return f"Runners Left on Base: {seasonal_hitting_stats['leftonbase'][2024]}"
 
+ui.h5('Range of Seasons')
 with ui.navset_card_tab(id='tab'):
     with ui.nav_panel("Win-Loss"):
         @render_plotly
